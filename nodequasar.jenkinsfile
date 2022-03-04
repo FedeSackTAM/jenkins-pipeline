@@ -9,22 +9,24 @@ pipeline {
     }
     
     environment {
-        JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\demaquinarias-cms-test-pipeline"
-        DEPLOY_TEST_PATH = "G:\\TAM\\DeMaquinariasPipeline"
-        ENV_FILES_PATH = "G:\\TAM\\DeMaquinarias"
+        JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\demaquinarias-cms-test-pipeline\\cms"
+        DEPLOY_TEST_PATH = "G:\\TAM\\DeMaquinariasPipeline\\CMS"
+        ENV_FILES_PATH = "G:\\TAM\\DeMaquinarias\\env-files"
+        REPO_URL = "https://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@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git"
+        REPO_BRANCH = "origin/test"
     }
 
     stages {
         stage('Git') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: 'origin/test']], userRemoteConfigs: [[url: 'https://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@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: "${REPO_BRANCH}"]], userRemoteConfigs: [[url: "${REPO_URL}"]]])
             }
         }
     
         stage('Build') {
             steps {
                    bat "cd cms && npm install"
-                   bat """copy "${ENV_FILES_PATH}\\env-files\\.env.test" "%WORKSPACE%\\cms\\.env" """
+                   bat """copy "${ENV_FILES_PATH}\\.env.test" "%WORKSPACE%\\cms\\.env" """
                    bat "cd cms && call quasar build"
             }
         }
@@ -32,8 +34,8 @@ pipeline {
         stage('Deploy') {
             steps {
                    bat """
-                        xcopy "%WORKSPACE%\\cms\\dist\\spa" /O /X /E /H /K /Y /d "${JENKINS_BUILDS_PATH}\\cms\\"
-                        xcopy "${JENKINS_BUILDS_PATH}\\cms" /O /X /E /H /K /Y /d "${DEPLOY_TEST_PATH}\\CMS\\"
+                        xcopy "%WORKSPACE%\\cms\\dist\\spa" /O /X /E /H /K /Y /d "${JENKINS_BUILDS_PATH}\\"
+                        xcopy "${JENKINS_BUILDS_PATH}" /O /X /E /H /K /Y /d "${DEPLOY_TEST_PATH}\\"
                    """
                 
             }
