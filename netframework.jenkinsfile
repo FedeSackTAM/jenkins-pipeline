@@ -1,0 +1,59 @@
+// .NET Framework
+
+pipeline {
+    agent any
+
+    environment {
+        JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\clarity-landing-pipeline"
+        DEPLOY_TEST_PATH = "G:\\TAM\\ClarityLandingPipeline"
+        APP_POOL_NAME = "claritylandingpipeline"
+        APP_NAME = "ClarityWebsite"
+        MSBUILD_PATH = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\amd64\\msbuild.exe"
+	MSBUILD_PATH2 = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Microsoft\\VisualStudio\\v15.0\\WebApplications"
+	MSBUILD_PATH3 = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\amd64\\msbuild.exe"
+        CONFIG = 'Release'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                   bat """
+                        "C:\\Program Files\\Nuget\\"nuget.exe restore "${APP_NAME}".sln
+                        dotnet restore "${APP_NAME}"
+                        "${MSBUILD_PATH3}\" "${APP_NAME}".sln    /p:Configuration=${CONFIG} ^
+                                                                /t:WebPublish ^
+                                                                /p:WebPublishMethod=FileSystem ^
+                                                                /p:DeleteExistingFiles=True ^
+                                                                /p:publishUrl="${JENKINS_BUILDS_PATH}" ^
+                                                                /p:VisualStudioVersion=15.0
+                        del "${JENKINS_BUILDS_PATH}\\Web.config"
+                    """
+
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                   bat """
+                        @ECHO OFF
+    
+                        SET appcmd=CALL %WINDIR%\\system32\\inetsrv\\appcmd 
+                        
+                        %appcmd% list site /name:"${APP_POOL_NAME}"
+                        IF "%ERRORLEVEL%" EQU "0" (
+                            ECHO EXISTS
+                            "%windir%\\system32\\inetsrv\\"appcmd stop apppool /apppool.name:"${APP_POOL_NAME}"
+                        ) ELSE (
+                            "%windir%\\system32\\inetsrv\\"appcmd add apppool /name:"${APP_POOL_NAME}"
+							%systemroot%/system32/inetsrv/APPCMD set app "${APP_POOL_NAME}" /applicationPool:"${APP_POOL_NAME}"
+
+                        )
+                        
+                        xcopy "${JENKINS_BUILDS_PATH}" /O /X /E /H /K /C /Y /d "${DEPLOY_TEST_PATH}"
+                        "%windir%\\system32\\inetsrv\\"appcmd start apppool /apppool.name:"${APP_POOL_NAME}"
+                   """
+                
+            }
+        }
+    }
+}
