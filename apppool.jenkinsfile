@@ -1,0 +1,35 @@
+// Create apppool
+
+pipeline {
+    agent any
+
+    environment {
+        JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\example-name"
+        DEPLOY_TEST_PATH = "G:\\TAM\\ExampleName"
+        APP_POOL_NAME = "examplename"
+    }
+
+    stages {
+        stage('Deploy') {
+            steps {
+                   bat """
+                        @ECHO OFF
+    
+                        SET appcmd=CALL %WINDIR%\\system32\\inetsrv\\appcmd 
+                        
+                        %appcmd% list site /name:"${APP_POOL_NAME}"
+                        
+                        IF "%ERRORLEVEL%" EQU "0" (
+                            %appcmd% stop apppool /apppool.name:"${APP_POOL_NAME}"
+                        ) ELSE (
+                            %appcmd% add apppool /name:"${APP_POOL_NAME}"
+							              %appcmd% set app "${APP_POOL_NAME}" /applicationPool:"${APP_POOL_NAME}"
+                        )
+                        
+                        xcopy "${JENKINS_BUILDS_PATH}" /O /X /E /H /K /C /Y /d "${DEPLOY_TEST_PATH}"
+                        %appcmd% start apppool /apppool.name:"${APP_POOL_NAME}"
+                   """
+                
+            }
+        }
+    }
