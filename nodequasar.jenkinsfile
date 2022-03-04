@@ -1,0 +1,42 @@
+// Node Quasar
+
+pipeline {
+    agent any
+    
+    tools {
+        nodejs 'Node Quasar'
+        git 'GIT_HOME'
+    }
+    
+    environment {
+        JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\demaquinarias-cms-test-pipeline"
+        DEPLOY_TEST_PATH = "G:\\TAM\\DeMaquinariasPipeline"
+        ENV_FILES_PATH = "G:\\TAM\\DeMaquinarias"
+    }
+
+    stages {
+        stage('Git') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: 'origin/test']], userRemoteConfigs: [[url: 'https://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@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git']]])
+            }
+        }
+    
+        stage('Build') {
+            steps {
+                   bat "cd cms && npm install"
+                   bat """copy "${ENV_FILES_PATH}\\env-files\\.env.test" "%WORKSPACE%\\cms\\.env" """
+                   bat "cd cms && call quasar build"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                   bat """
+                        xcopy "%WORKSPACE%\\cms\\dist\\spa" /O /X /E /H /K /Y /d "${JENKINS_BUILDS_PATH}\\cms\\"
+                        xcopy "${JENKINS_BUILDS_PATH}\\cms" /O /X /E /H /K /Y /d "${DEPLOY_TEST_PATH}\\CMS\\"
+                   """
+                
+            }
+        }
+    }
+}
