@@ -12,7 +12,7 @@ pipeline {
         JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\demaquinarias-cms-test-pipeline\\cms"
         DEPLOY_TEST_PATH = "G:\\TAM\\DeMaquinariasPipeline\\CMS"
         ENV_FILES_PATH = "G:\\TAM\\DeMaquinarias\\env-files"
-        REPO_URL = "https://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@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git"
+        REPO_URL = "https://token@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git"
         REPO_BRANCH = "origin/test"
     }
 
