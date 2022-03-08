@@ -12,14 +12,15 @@ pipeline {
         JENKINS_BUILDS_PATH = "C:\\JenkinsBuilds\\demaquinarias-cms-test-pipeline\\cms"
         DEPLOY_TEST_PATH = "G:\\TAM\\DeMaquinariasPipeline\\CMS"
         ENV_FILES_PATH = "G:\\TAM\\DeMaquinarias\\env-files"
-        REPO_URL = "https://token@github.com/FedeSackTAM/cms_demaquinarias_pipeline.git"
-        REPO_BRANCH = "origin/test"
+        REPO_URL = "https://github.com/FedeSackTAM/cms_demaquinarias_pipeline.git"
+        CREDENTIALS_ID = "jenkins-pipeline-test"
+        REPO_BRANCH = "test"
     }
 
     stages {
         stage('Git') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: "${REPO_BRANCH}"]], userRemoteConfigs: [[url: "${REPO_URL}"]]])
+                git branch: "${REPO_BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
             }
         }
     
